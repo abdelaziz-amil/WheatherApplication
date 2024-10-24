@@ -1,0 +1,27 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2024-09-26T15:46:54+02:00",
+  "id": "android-weather",
+  "duration": 797,
+  "title": "Code Lab Android Weather",
+  "summary": "Amazing Android Weather App",
+  "source": "./README.md",
+  "theme": "",
+  "status": [
+    "draft"
+  ],
+  "category": [
+    "codelab",
+    "android",
+    "kotlin",
+    "compose"
+  ],
+  "tags": [
+    "android"
+  ],
+  "feedback": "no-link",
+  "url": "android-weather"
+}

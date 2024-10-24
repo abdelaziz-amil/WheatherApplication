@@ -1,0 +1,2165 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Code Lab Android Weather</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="android-weather"
+                  title="Code Lab Android Weather"
+                  environment="web"
+                  feedback-link="no-link">
+    
+      <google-codelab-step label="Sommaire" duration="2">
+        <ul>
+<li><a href="#code-lab-android-weather" target="_blank">Code Lab Android Weather</a><ul>
+<li><a href="#0" target="_blank">Sommaire</a></li>
+<li><a href="#1" target="_blank">Présentation</a></li>
+<li><a href="#2" target="_blank">Etapes de réalisation</a></li>
+<li><a href="#3" target="_blank">Initialisation du projet</a></li>
+<li><a href="#4" target="_blank">Construction de la couche Data du pattern MVVM</a></li>
+<li><a href="#5" target="_blank">Injection Koin</a></li>
+<li><a href="#6" target="_blank">Affichage brut des premiers résultats</a></li>
+<li><a href="#7" target="_blank">1er écran : Recherche et affichage du premier résultat</a></li>
+<li><a href="#8" target="_blank">Navigation</a></li>
+<li><a href="#9" target="_blank">Liste des résultats</a></li>
+<li><a href="#10" target="_blank">Localisation</a></li>
+<li><a href="#11" target="_blank">Carte Google Map</a></li>
+<li><a href="#12" target="_blank">Splash screen</a></li>
+<li><a href="#12" target="_blank">Datastore et enregistrement des préférences</a></li>
+<li><a href="#12" target="_blank">Room et cache local</a></li>
+</ul>
+</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Présentation" duration="5">
+        <p>L&#39;application Android Weather permet de rechercher les prévisions météos pour une ville donnée.</p>
+<p>Voici la liste des fonctionnalités :</p>
+<ul>
+<li>Recherche par nom de ville ou par les coordonnées GPS du téléphone</li>
+<li>Affichage de la météo actuelle</li>
+<li>Liste des prévisions pour les prochaines heures / jours</li>
+<li>Affichage des informations de la ville trouvée, et localisation sur une carte</li>
+<li>Possibilité d&#39;ajouter / supprimer la ville trouvée dans ses favoris, pour faciliter la recherche sur cette ville lors d&#39;une prochaine session</li>
+</ul>
+<p class="image-container"><img alt="img.png" src="img/5552af7122dad0c2.png"></p>
+<p class="image-container"><img alt="img_1.png" src="img/38caafbb9c67e92d.png"></p>
+<p class="image-container"><img alt="img_2.png" src="img/d0020bb4f28ef3c1.png"></p>
+<p class="image-container"><img alt="img_3.png" src="img/a074c41b41160810.png"></p>
+<p class="image-container"><img alt="img_4.png" src="img/76e9ee960a7b29e4.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Etapes de réalisation" duration="5">
+        <ul>
+<li>Initialisation d&#39;un projet compose et des dépendances Gradle nécessaires (Compose, Koin, Ktor, Serialization),</li>
+<li>Construction du squelette de l&#39;application en MVVM pour récupérer des données Météo (View / ViewModel / Repository / API),</li>
+<li>Injection des dependances dans un module Koin</li>
+<li>Initialisation d&#39;une API basée sur <a href="https://openweathermap.org/forecast5" target="_blank">openweathermap</a> permettant de récupérer des infos méteo, soit par texte, soit par coordonnées,</li>
+<li>Mapping des données entre l&#39;API et ce qui sera affiché sur l&#39;écran,</li>
+<li>Récupération des données depuis le ViewModel à l&#39;aide des coroutines Flow,</li>
+<li>Affichage d&#39;une première liste de résultats pour valider l&#39;architecture et l&#39;appel à l&#39;API</li>
+<li>Affichage du 1er écran : <ul>
+<li>champ de saisie,</li>
+<li>loader pendant la phase de chargement,</li>
+<li>affichage du 1er résultat,</li>
+<li>lien permettant d&#39;accéder à la liste complète de résultat</li>
+</ul>
+</li>
+<li>Affichage du 2ème écran : <ul>
+<li>liste d&#39;item affichant une information de météo</li>
+</ul>
+</li>
+<li>Ajout de fonctionnalités optionnelles : <ul>
+<li><a href="https://www.devbitsandbytes.com/requesting-location-permission-in-jetpack-compose/" target="_blank">Localisation</a> du mobile permettant de lancer une recherche par coordonnées GPS,</li>
+<li>Ajout d&#39;une carte <a href="https://developers.google.com/maps/documentation/android-sdk/maps-compose" target="_blank">Google Map Compose</a> permettant d&#39;afficher la localisation de la ville trouvée,</li>
+<li>Ajout en favoris d&#39;une ville, permettant de sauvegarder localement une liste de ville, basée sur le <a href="https://developer.android.com/topic/libraries/architecture/datastore" target="_blank">DataStore Android</a></li>
+<li>Ajout d&#39;un splash screen à l&#39;application, avec une animation <a href="https://github.com/airbnb/lottie" target="_blank">Lottie</a>,</li>
+<li>Gestion d&#39;un cache local d&#39;API avec Android <a href="https://developer.android.com/jetpack/androidx/releases/room" target="_blank">Room</a> et le <a href="https://medium.com/android-news/making-android-jetpacks-networkboundresource-work-in-offline-mode-fd06ef545ec1" target="_blank">NetWorkBoundRessource</a></li>
+</ul>
+</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Initialisation du projet" duration="15">
+        <ol type="1">
+<li>Nouveau projet sous Android Studio : Empty Activity</li>
+</ol>
+<p class="image-container"><img alt="img_29.png" src="img/83fbacce3633ca6e.png"></p>
+<ol type="1" start="2">
+<li>Configuration des dépendances Gradle <ul>
+<li>Compose</li>
+<li>Koin</li>
+<li>Ktor</li>
+<li>Ktor Serialisation</li>
+<li>Navigation</li>
+<li>Room</li>
+</ul>
+</li>
+</ol>
+<p>C&#39;est dépendances vont nous servir dans la réalisation de l&#39;ensemble du projet</p>
+<p>Gradle principal</p>
+<pre><code language="language-kotlin" class="language-kotlin">plugins {
+  alias(libs.plugins.android.application) apply false
+  alias(libs.plugins.kotlin.android) apply false
+  alias(libs.plugins.kotlin.android.multiplatform) apply false
+  alias(libs.plugins.kotlin.serialization) apply false
+  alias(libs.plugins.kotlin.secrets) apply false
+}
+</code></pre>
+<p>Gradle Application</p>
+<pre><code language="language-kotlin" class="language-kotlin">plugins {
+  alias(libs.plugins.android.application)
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.kotlin.secrets)
+  id(&#34;kotlinx-serialization&#34;)
+  id(&#34;kotlin-kapt&#34;)
+}
+
+// ...
+
+dependencies {
+  // Dependances Android classiques 
+  // .....
+
+  // Koin for Android
+  implementation(libs.koin.core)
+  implementation(libs.koin.android)
+  implementation(libs.koin.test)
+  implementation(libs.koin.androidx.compose)
+
+  /// Ktor
+  implementation(libs.ktor.client.core)
+  implementation(libs.ktor.client.okhttp)
+  implementation(libs.ktor.client.serialization.kotlinx)
+  implementation(libs.ktor.serialization)
+  implementation(libs.ktor.client.log)
+  implementation(libs.ktor.client.json)
+  implementation(libs.ktor.client.android)
+  implementation(libs.ktor.client.content.negociation)
+  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.kotlinx.coroutines.android)
+
+  // Navigation
+  implementation(libs.compose.navigation)
+
+  // Location
+  implementation(libs.play.service.location)
+
+  // Map
+  implementation(libs.play.service.map)
+  implementation(libs.compose.map)
+
+  // Lottie
+  implementation(libs.lottie)
+
+  // Datastore
+  implementation(libs.androidx.datastore)
+
+  // Room
+  implementation(libs.android.room)
+  annotationProcessor(libs.android.room.compiler)
+  implementation(libs.android.room.ktx)
+  kapt(libs.android.room.compiler)
+  implementation(libs.android.gson)
+}
+
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Construction de la couche Data du pattern MVVM" duration="60">
+        <p>Créer les fichiers Kotlin suivants :</p>
+<ul>
+<li>une classe <code>Ressource</code></li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">package com.main.weather.utils
+
+enum class Status {
+    SUCCESS,
+    ERROR,
+    LOADING
+}
+
+sealed class Resource&lt;T&gt;(
+    val status: Status,
+    val data: T? = null,
+    val error: Throwable? = null
+) {
+    class Success&lt;T&gt;(data: T) : Resource&lt;T&gt;(Status.SUCCESS, data)
+    class Loading&lt;T&gt;(data: T? = null) : Resource&lt;T&gt;(Status.LOADING, data)
+    class Error&lt;T&gt;(throwable: Throwable, data: T? = null) :
+        Resource&lt;T&gt;(Status.ERROR, data, throwable)
+} 
+</code></pre>
+<ul>
+<li>une classe <code>OpenWeatherApi</code></li>
+</ul>
+<p>Cette classe va servir à invoquer la l&#39;API Weather.</p>
+<pre><code language="language-kotlin" class="language-kotlin">class OpenWeatherApi(
+  private val client: HttpClient,
+  private val apiKey : String,
+  private var baseUrl: String = &#34;https://api.openweathermap.org/data/2.5/forecast&#34;,
+) : KoinComponent {
+
+  suspend fun fetchWeather(city: String) = client.get(&#34;$baseUrl&#34;) {
+    url {
+      parameters.append(&#34;q&#34;, &#34;$city, FR&#34;)
+      parameters.append(&#34;APPID&#34;, apiKey)
+      parameters.append(&#34;units&#34;, &#34;metric&#34;)
+    }
+  }.body&lt;WeatherResultVO&gt;()
+
+  suspend fun fetchWeather(lat: Double, lon : Double) = client.get(&#34;$baseUrl&#34;) {
+    url {
+      parameters.append(&#34;lat&#34;, &#34;$lat&#34;)
+      parameters.append(&#34;lon&#34;, &#34;$lon&#34;)
+      parameters.append(&#34;APPID&#34;, apiKey)
+      parameters.append(&#34;units&#34;, &#34;metric&#34;)
+    }
+  }.body&lt;WeatherResultVO&gt;()
+}
+
+</code></pre>
+<p>L&#39;API est définie ici <a href="https://openweathermap.org/forecast5" target="_blank">openweathermap</a></p>
+<p>1° La première fonction permet de lancer l&#39;appel avec une coordonnée lat / lon.</p>
+<p>Ex : curl https://api.openweathermap.org/data/2.5/forecast?lat=48.4&amp;lon=-4.4833&amp;units=metric&amp;APPID=888f70e84a4d7e44f3c0d4870c926e9d</p>
+<p>2° La deuxième fonction permet de lancer l&#39;appel avec un texte libre.</p>
+<p>Ex : curl https://api.openweathermap.org/data/2.5/forecast?q=Brest,FR&amp;units=metric&amp;APPID=888f70e84a4d7e44f3c0d4870c926e9d</p>
+<ul>
+<li>un fichier Kotlin <code>WeatherVO</code> (qui contiendra tous les classes d&#39;objets remontés par l&#39;API)</li>
+</ul>
+<p>Les objets représentent l&#39;arbre au format JSON remonté par l&#39;API.</p>
+<pre><code language="language-kotlin" class="language-kotlin">package com.android.android_weather.api
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class WeatherResultVO(
+    val city: WeatherCityVO? = null,
+    val list: List&lt;WeatherItemVO&gt;? = listOf()
+)
+
+@Serializable
+data class WeatherCityVO(
+    val name: String,
+    val coord: CoordinateVO,
+    var population: Int,
+    val sunrise: Double? = null,
+    val sunset: Double? = null
+)
+
+@Serializable
+data class CoordinateVO(val lat: Double? = null, val lon: Double? = null)
+
+@Serializable
+data class WeatherItemVO(val dt_txt: String, val dt: Float, val main: WeatherInfoVO)
+
+@Serializable
+data class WeatherInfoVO(val temp: Double, val humidity: Double, val pressure: Double)
+
+</code></pre>
+<ul>
+<li>un fichier Kotlin <code>WeatherDomain</code> (qui contiendra toutes les classes d&#39;objets remontés par le repository vers la couche Domain)</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">data class WeatherResultDomain(
+    val city: WeatherCityDomain? = null,
+    val items: List&lt;WeatherItemDomain&gt;? = listOf()
+)
+
+data class WeatherCityDomain(
+    val name: String,
+    val coord: CoordinateDomain,
+    var population: Int,
+    val sunrise: Double? = null,
+    val sunset: Double? = null
+)
+
+data class CoordinateDomain(
+    val lat: Double? = null,
+    val lon: Double? = null
+)
+
+data class WeatherItemDomain(
+    val date: LocalDateTime,
+    val image: String,
+    val infos: WeatherInfoDomain
+) {
+    lateinit var day: String
+    lateinit var hour: String
+}
+
+data class WeatherInfoDomain(
+    val temp: Double,
+    val humidity: Double,
+    val pressure: Double
+)
+
+</code></pre>
+<ul>
+<li>un fichier Kotlin <code>Mapper</code> (qui contiendra tous les mapper entre la couche data et la couche domaine.</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">fun WeatherResultVO.toDomain() = WeatherResultDomain(
+    city = this.city?.toDomain(),
+    items = this.list?.map { it.toDomain() },
+)
+
+fun WeatherCityVO.toDomain() = WeatherCityDomain(
+    name = this.name,
+    coord = this.coord.toDomain(),
+    population = this.population,
+    sunrise = this.sunrise,
+    sunset = this.sunset
+)
+
+fun CoordinateVO.toDomain() = CoordinateDomain(
+    lat = this.lat,
+    lon = this.lon
+)
+
+fun WeatherItemVO.toDomain() = WeatherItemDomain(
+    date = LocalDateTime.parse(this.dt_txt, DateTimeFormatter.ofPattern(&#34;yyyy-MM-dd HH:mm:ss&#34;)),
+    image = when {
+        main.humidity &lt; 60 -&gt; &#34;1&#34;
+        main.humidity &lt; 80 -&gt; &#34;2&#34;
+        else -&gt; &#34;3&#34;
+    },
+    infos = this.main.toDomain()
+).apply {
+    this.day = date.dayOfMonth.toString()
+    this.hour = date.hour.toString()
+}
+
+fun WeatherInfoVO.toDomain() = WeatherInfoDomain(
+    temp = this.temp,
+    humidity = this.humidity,
+    pressure = this.pressure
+)
+</code></pre>
+<p>Ajouter également (si ce n&#39;est pas déjà le cas), le plugin kotlin serialisation au gradle dans le module de l&#39;application.</p>
+<pre><code>id &#34;kotlinx-serialization&#34;
+</code></pre>
+<ul>
+<li>une interface <code>WeatherRepositoryInterface</code></li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">interface WeatherRepositoryInterface {
+  suspend fun fetchWeather(city: String): Flow&lt;Resource&lt;WeatherResultDomain?&gt;&gt;
+  suspend fun fetchWeather(lat: Double, lon: Double): Flow&lt;Resource&lt;WeatherResultDomain?&gt;&gt;
+}
+</code></pre>
+<ul>
+<li>une classe <code>WeatherRepository</code></li>
+</ul>
+<p>Implémenter l&#39;appel à l&#39;API <code>OpenWeatherApi</code> sur l&#39;implementation du repository en utilisant <a href="https://developer.android.com/kotlin/flow?hl=fr" target="_blank">les coroutines Flow</a>.</p>
+<pre><code language="language-kotlin" class="language-kotlin">class WeatherRepository2(
+    private val openWeatherApi: OpenWeatherApi,
+) : KoinComponent, WeatherRepositoryInterface {
+    override suspend fun fetchWeather(city: String): Flow&lt;Resource&lt;WeatherResultDomain?&gt;&gt; {
+        TODO(&#34;Not yet implemented&#34;)
+    }
+
+    override suspend fun fetchWeather(
+        lat: Double,
+        lon: Double
+    ): Flow&lt;Resource&lt;WeatherResultDomain?&gt;&gt; {
+        TODO(&#34;Not yet implemented&#34;)
+    }
+}
+</code></pre>
+<ul>
+<li>une classe <code>WeatherViewModel</code> qui permettra de lancer les appels vers le repository, et qui exposera un state aux composants</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">data class WeatherViewModelState(
+    var city: WeatherCityDomain? = null,
+    var first: WeatherItemDomain? = null,
+    var items: List&lt;WeatherItemDomain&gt; = emptyList(),
+    var isLoading: Boolean = false,
+)
+
+class WeatherViewModel(private val repository: WeatherRepositoryInterface) :
+    ViewModel() {
+  
+    private val _viewState = MutableStateFlow&lt;WeatherViewModelState&gt;(WeatherViewModelState())
+    var viewState = _viewState.asStateFlow()
+  
+    fun cityChanged(value: String) = fetchWeather(value)
+
+    fun locationChanged(value: Location) = fetchWeather(value)
+
+    private fun fetchWeather(location: Location) = fetchWithFlow(null, location)
+
+    private fun fetchWeather(city: String) = fetchWithFlow(city)
+
+    private fun fetchWithFlow(city: String? = null, location: Location? = null) {
+      TODO(&#34;To impl&#34;)
+    }
+}
+</code></pre>
+<p>Implémenter l&#39;appel au repository pour récupérer le flow. Toute la partie data est prête, nous allons pouvoir plugger l&#39;interface au model, et tester toute la chaîne d&#39;appel.</p>
+<p>Mais avant, passons à l&#39;injection de dépendance pour déclarer tous ces objets dans notre Archiecture.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Injection Koin" duration="20">
+        <ul>
+<li>Créer une classe <code>AppKoinModule</code> (injection de tout le nécessaire au fonctionnement de l&#39;application)</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">import android.util.Log
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.serialization.json.Json
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
+
+val appModule = module {
+    single&lt;String&gt;(named(&#34;weather_api_key&#34;)) { &#34;888f70e84a4d7e44f3c0d4870c926e9d&#34; }
+    viewModel { WeatherViewModel(repository = get()) }
+}
+
+val commonModule = module {
+    single { Android.create() }
+    single { createJson() }
+    single { createHttpClient(get(), get(), enableNetworkLogs = true) }
+    single { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
+    single&lt;WeatherRepositoryInterface&gt; { WeatherRepository(get()) }
+    single { OpenWeatherApi(get(), get(named(&#34;weather_api_key&#34;))) }
+}
+
+fun createJson() = Json { isLenient = true; ignoreUnknownKeys = true }
+
+fun createHttpClient(httpClientEngine: HttpClientEngine, json: Json, enableNetworkLogs: Boolean) =
+    HttpClient(httpClientEngine) {
+        install(ContentNegotiation) {
+            json(json)
+        }
+        if (enableNetworkLogs) {
+            install(Logging) {
+                logger = CustomHttpLogger()
+                level = LogLevel.ALL
+            }
+        }
+    }
+
+class CustomHttpLogger() : Logger {
+    override fun log(message: String) {
+        Log.i(&#34;CustomHttpLogger&#34;, &#34;message : $message&#34;)
+    }
+}
+</code></pre>
+<ul>
+<li>Créer une classe <code>WeatherApplication</code> (point d&#39;entrée de l&#39;application qui va initialiser Koin)</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">class WeatherApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        startKoin {
+            androidContext(this@WeatherApplication)
+            modules(appModule)
+            modules(commonModule)
+        }
+    }
+}
+</code></pre>
+<p>N&#39;oubliez pas de référencer ce nouveau point d&#39;entré de l&#39;application dans le fichier Manifest.xml.</p>
+<pre><code>&lt;application
+        android:name=&#34;.WeatherApplication&#34;.../&gt;
+        
+</code></pre>
+<p>Votre application est prête, lançons les tests.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Affichage brut des premiers résultats" duration="30">
+        <ul>
+<li>Activer les droits d&#39;accès internet dans le manifest de l&#39;application</li>
+</ul>
+<pre><code language="language-xml" class="language-xml">&lt;uses-permission android:name=&#34;android.permission.INTERNET&#34; /&gt;
+&lt;uses-permission android:name=&#34;android.permission.ACCESS_NETWORK_STATE&#34; /&gt;
+</code></pre>
+<ul>
+<li>Créer un fichier <code>WeatherList</code>, qui va contenir un composant @Composable, et va lancer une recherche avec en entrée le nom de la ville, et afficher une liste de résultat)</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import org.koin.androidx.compose.getViewModel
+
+@Composable
+fun WeatherList(name: String) {
+    val weatherViewModel = getViewModel&lt;WeatherViewModel&gt;()
+    val state by weatherViewModel.viewState.collectAsState()
+
+    LaunchedEffect(true) {
+      weatherViewModel.cityChanged(name)
+    }
+  
+    Column() {
+        Text(text = &#34;Hello $name!&#34;)
+        state.items.let {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
+                items(items = it, itemContent = { item -&gt;
+                    Row() {
+                        Text(text = &#34;Le ${item.day} à ${item.hour}H ==&gt; &#34;)
+                        Text(
+                            text =
+                            when (item.image) {
+                                &#34;1&#34; -&gt; &#34;beau&#34;
+                                &#34;2&#34; -&gt; &#34;moyen&#34;
+                                &#34;3&#34; -&gt; &#34;pluie&#34;
+                                else -&gt; &#34;:/&#34;
+                            }
+                        )
+                    }
+                })
+            }
+        }
+    }
+}
+</code></pre>
+<p>Utiliser ce composant dans <code>MainActivity</code> et rentrer une ville directement en dur dans le code pour tester la chaîne d&#39;appel.</p>
+<pre><code language="language-kotlin" class="language-kotlin">class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            AndroidweatherTheme {
+                // A surface container using the &#39;background&#39; color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    WeatherList(&#34;Brest&#34;)
+                }
+            }
+        }
+    }
+} 
+</code></pre>
+<p>Lancer un build, vous devez  obtenir le résultat suivant :</p>
+<p class="image-container"><img alt="img_5.png" src="img/4299558dfa2e8728.png"></p>
+<p>Pas mal ! Vous venez d&#39;exécuter toute la chaîne d&#39;appel :</p>
+<p>Composable &gt; ViewModel &gt; Repository &gt; API</p>
+<p>Nous allons désormais travailler l&#39;UI/UX, et permettre à l&#39;utilisateur de saisir une recherche.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="1er écran : Recherche et affichage du premier résultat" duration="120">
+        <p>Maintenant que nous sommes capable de lancer une recherche, et d&#39;afficher des résultats, nous allons désormais travailler sur la présentation des informations.</p>
+<p>Nous allons réaliser 2 écrans :</p>
+<ul>
+<li>1 écran qui permet de saisir une recherche, d&#39;afficher le premier résultat, de naviguer vers les autres résultats,</li>
+<li>1 écran qui permet de visualiser sous forme de liste les autres résultat.</li>
+</ul>
+<p>Commençons par le premier écran.</p>
+<h2 is-upgraded>Externalisation des resources</h2>
+<p>Nous allons voir dans un premier temps, comment gérer les ressources (chaînes de caractères, assets, etc.).</p>
+<ul>
+<li>Pour les chaînes de caractères dans l&#39;application, définissez les en tant que <a href="https://developer.android.com/guide/topics/resources/string-resource?hl=fr" target="_blank">ressources dans &#34;string.xml&#34;</a></li>
+<li>Pour les icones, importez les en tant que <a href="https://developer.android.com/guide/topics/resources/drawable-resource?hl=fr" target="_blank">resources &#34;drawable&#34;</a> au format SVG (new &gt; images assets)</li>
+</ul>
+<p>Vous trouverez votre bonheur dans les icones gratuits disponibles sur <a href="https://www.iconfinder.com/" target="_blank">IconFinder</a></p>
+<p>Nous allons définir des resources lors des prochaines étapes.</p>
+<h2 is-upgraded>1) Créer un composant <code>WeatherSearchBar</code> :</h2>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun WeatherSearchBar(
+    searchText: String,
+    placeholderText: String = &#34;&#34;,
+    onSearchTextChanged: (String) -&gt; Unit = {},
+    onClearClick: () -&gt; Unit = {}
+) 
+</code></pre>
+<p><code>WeatherSearchBar</code> doit :</p>
+<ul>
+<li>permettre de saisir un texte avce un composant <code>OutlinedTextField</code></li>
+<li>pre remplir le champ avec un paramètre en entrée <code>searchText</code></li>
+<li>pre remplir le place holder avec un paramètre en entrée  <code>placeholderText</code></li>
+<li>permettre d&#39;effacer saisie avec un bouton</li>
+<li>invoquer les 2 callbacks qui permettent d&#39;intéragir avec l&#39;extérieur : <ul>
+<li><code>onSearchTextChanged</code> : la saisie dans le champ texte</li>
+<li><code>onClearClick</code> : la demande de suppression de la recherche.</li>
+</ul>
+</li>
+</ul>
+<p class="image-container"><img alt="img_12.png" src="img/ecc8a919ec45766c.png"></p>
+<p class="image-container"><img alt="img_13.png" src="img/41c5d4f6bb90ca8.png"></p>
+<p>Utilisez le composant <a href="https://developer.android.com/jetpack/compose/text" target="_blank"><code>OutlinedTextField</code> pour la saisie</a>.</p>
+<p>Pour le bouton de fermeture, vous pouvez vous servir d&#39;un asset disponible de base.</p>
+<pre><code language="language-kotlin" class="language-kotlin">IconButton(
+    onClick = { onClearClick() }
+) {
+    Icon(
+        imageVector = Icons.Filled.Close,
+        contentDescription = stringResource(id = R.string.icn_search_clear_content_description)
+    )
+}
+</code></pre>
+<p>Référencer ces chaînes de caractère dans le fichier <code>strings.xml</code>.</p>
+<pre><code language="language-xml" class="language-xml"> &lt;!--Recherche --&gt;
+&lt;string name=&#34;search_placeholder&#34;&gt;Saisie une ville.&lt;/string&gt;
+&lt;string name=&#34;search_processing_label&#34;&gt;Recherche en cours...&lt;/string&gt;
+&lt;string name=&#34;icn_search_clear_content_description&#34;&gt;Annuler&lt;/string&gt;
+</code></pre>
+<p>Compléter ce composant.</p>
+<h2 is-upgraded>2) Créer un composant <code>WeatherDetailsItem</code> :</h2>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun WeatherDetailsItem(
+    modifier: Modifier, 
+    city: WeatherCityDomain, 
+    item: WeatherItemDomain)
+</code></pre>
+<p><code>WeatherDetailsItem</code> doit :</p>
+<ul>
+<li>Afficher les informations de la ville</li>
+<li>Afficher les informations du premier item de météo (heure, icone, température, pourcentage d&#39;humidité)</li>
+</ul>
+<p class="image-container"><img alt="img_14.png" src="img/f26781538b074b72.png"></p>
+<p>Référencer ces resources String, et les exploiter dans le composant.</p>
+<pre><code language="language-xml" class="language-xml">&lt;!-- Details --&gt;
+&lt;string name=&#34;details_city_label&#34;&gt;Résultats pour la ville de %s&lt;/string&gt;
+&lt;string name=&#34;details_hour_label&#34;&gt;En ce moment à %sH&lt;/string&gt;
+&lt;string name=&#34;details_infos_label&#34;&gt;%1$.1f ° | %2$.1f pourcent d\&#39;humidité&lt;/string&gt;
+</code></pre>
+<p>Pour la température et l&#39;humidité, utilisez un template de resource string</p>
+<pre><code language="language-kotlin" class="language-kotlin">Text(
+    text = stringResource(
+        id = R.string.details_infos_label,
+        item.infos.temp,
+        item.infos.humidity
+    )
+)
+</code></pre>
+<p>Pour l&#39;affichage de l&#39;icone, importer 4 resources Drawable (soleil / soleil avec nuage / nuage / pluie), et les exploiter dans le composant :</p>
+<pre><code language="language-kotlin" class="language-kotlin">Image(
+  painter = painterResource(
+    id = when (item.infos.humidity) {
+      in 0.0..50.0 -&gt; R.drawable.ic_sun
+      in 50.0..80.0 -&gt; R.drawable.ic_cloud
+      in 80.0..90.0 -&gt; R.drawable.ic_cloud_gray
+      else -&gt; R.drawable.ic_rain
+    }
+  ),
+  contentDescription = null,
+  contentScale = ContentScale.FillWidth,
+  modifier = Modifier.width(100.dp)
+)
+</code></pre>
+<p>Compléter ce composant.</p>
+<p>N&#39;hésitez pas à utiliser la preview pour valider le rendu.</p>
+<p>Exemple :</p>
+<pre><code language="language-kotlin" class="language-kotlin">@Preview(showBackground = true, backgroundColor = 0xFFFFFF)
+@Composable
+fun WeatherDetailsItemPreview() {
+    WeatherDetailsItem(
+        modifier = Modifier,
+        city = WeatherCityDomain(
+            name = &#34;Brest&#34;,
+            coord = CoordinateDomain(),
+            population = 1000000,
+        ),
+        item = WeatherItemDomain(
+            date = LocalDateTime.now(),
+            image = &#34;&#34;,
+            infos = WeatherInfoDomain(
+                temp = 10.0,
+                humidity = 50.0,
+                pressure = 0.0
+            ),
+            day = &#34;12&#34;,
+            hour = &#34;10&#34;
+        )
+    )
+}
+</code></pre>
+<h2 is-upgraded>3) Créer un composant (une vue) <code>WeatherSearchScreen</code> :</h2>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun WeatherSearchScreen(
+    navHostController: NavHostController
+)
+</code></pre>
+<p><code>WeatherSearchScreen</code> doit :</p>
+<ul>
+<li>référencer le composant de recherche <code>WeatherSearchBar</code> et le composant <code>WeatherDetailsItem</code>,</li>
+<li>afficher une 1ère information proposant de lancer une recheche, tant qu&#39;une première recherche n&#39;a pas été lancée.</li>
+</ul>
+<p class="image-container"><img alt="img_6.png" src="img/58a92b73cd6c504.png"></p>
+<ul>
+<li>récupérer la ville à chercher et lancer la recherche (affichage d&#39;un loader pour patienter),</li>
+</ul>
+<p class="image-container"><img alt="img_7.png" src="img/eaa04caf72c309b3.png"></p>
+<ul>
+<li>récupérer le premier résultat du tableau, et le passer à <code>WeatherDetailsItem</code> pour afficher ces informations</li>
+</ul>
+<p class="image-container"><img alt="img_10.png" src="img/f10b02f8aad3526f.png"></p>
+<ul>
+<li>référencer un bouton qui permettra de naviguer vers la liste (pour le moment fictif, il ne fait rien)</li>
+</ul>
+<p>Pour le bouton, vous pouvez utiliser encore une image disponible.</p>
+<pre><code language="language-kotlin" class="language-kotlin">Button(onClick = {
+    
+}) {
+    Icon(
+        imageVector = Icons.Filled.ArrowForward,
+        contentDescription = stringResource(id = R.string.icn_go_to_details)
+    )
+}
+</code></pre>
+<p>Référencer ces resources String, et les exploiter dans le composant :</p>
+<pre><code language="language-xml" class="language-xml">&lt;!--Recherche --&gt;
+&lt;string name=&#34;icn_go_to_details&#34;&gt;Détails&lt;/string&gt;
+&lt;string name=&#34;search_placeholder&#34;&gt;Saisie une ville.&lt;/string&gt;
+&lt;string name=&#34;search_processing_label&#34;&gt;Recherche en cours...&lt;/string&gt;
+&lt;string name=&#34;entry_label&#34;&gt;Tu hésites à aller à la plage ? \n Go regarder la météo !&lt;/string&gt;
+</code></pre>
+<p>Pour structurer votre écran, aidez vous du <a href="https://foso.github.io/Jetpack-Compose-Playground/material/scaffold/" target="_blank">composant <code>Scaffold</code></a>.</p>
+<p>Compléter le reste de ce composant, mais voilà la solution pour vous aider.</p>
+<pre><code language="language-kotlin" class="language-kotlin">import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.android.weather.m2.R
+import com.android.weather.m2.domain.WeatherViewModel
+import com.android.weather.m2.domain.components.WeatherDetailsItem
+import com.android.weather.m2.domain.components.WeatherSearchBar
+import org.koin.androidx.compose.getViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WeatherSearchScreen(
+    navHostController: NavHostController
+) {
+  var text by remember { mutableStateOf(&#34;&#34;) }
+  val focusManager = LocalFocusManager.current
+
+  val weatherViewModel = getViewModel&lt;WeatherViewModel&gt;()
+
+  val state by weatherViewModel.viewState.collectAsState()
+
+  val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+  Scaffold(
+    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+    topBar = {
+      TopAppBar(
+        scrollBehavior = scrollBehavior,
+        title = { Text(&#34;&#34;) },
+        actions = {
+          WeatherSearchBar(
+            searchText = text,
+            placeholderText = stringResource(id = R.string.search_placeholder),
+            onSearchTextChanged = { it -&gt;
+              text = it
+              weatherViewModel.cityChanged(text)
+            },
+            onClearClick = {
+              text = &#34;&#34;
+              weatherViewModel.cityChanged(text)
+            }
+          )
+        })
+    }
+  ) { innerPadding -&gt;
+    Column(
+      modifier = Modifier
+        .padding(innerPadding)
+        .fillMaxSize()
+        .pointerInput(Unit) {
+          detectTapGestures(onTap = {
+            focusManager.clearFocus()
+          })
+        }
+    ) {
+      if (state.isLoading) {
+        Column(
+          horizontalAlignment = Alignment.CenterHorizontally,
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(30.dp)
+        ) {
+          CircularProgressIndicator()
+          Text(
+            text = stringResource(
+              R.string.search_processing_label
+            )
+          )
+        }
+      } else if (state.city != null &amp;&amp; state.first != null) {
+        val city = state.city!!
+        val item = state.first!!
+
+        WeatherDetailsItem(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+            .weight(2f),
+          city = city,
+          item = item
+        )
+      } else {
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .padding(20.dp),
+          verticalArrangement = Arrangement.Center,
+          horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+          Image(
+            painter = painterResource(
+              id = R.drawable.ic_weather_question
+            ),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+              .width(100.dp)
+              .height(100.dp)
+          )
+          Text(
+            text = stringResource(id = R.string.entry_label),
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(30.dp),
+            style = MaterialTheme.typography.bodyLarge,
+          )
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<h2 is-upgraded>4) Modification de la Main Activity :</h2>
+<p>Référencer l&#39;écran <code>WeatherSearchScreen</code> dans l&#39;Activitiy.</p>
+<pre><code language="language-kotlin" class="language-kotlin">class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            AndroidweatherTheme {
+                // A surface container using the &#39;background&#39; color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    val navHostController = rememberNavController()
+                    WeatherSearchScreen(navHostController = navHostController)
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>Vous avez désormais un écran fonctionnel permettant de lancer une recherche, d&#39;afficher un premier résultat, nous allons désormais brancher ce qu&#39;il faut pour naviguer vers la liste complète des résultats.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Navigation" duration="30">
+        <p>Pour la navigation, nous allons utiliser l&#39;objet <code>navHostController</code> en entrée dans la vue <code>WeatherSearchScreen</code>. Avant cela, il nous faut définir les &#34;routes&#34; de notre application.</p>
+<p>Tout d&#39;abord lisez cette <a href="https://developer.android.com/jetpack/compose/navigation" target="_blank">documentation sur la navigation avec Compose</a>.</p>
+<h2 is-upgraded>1) Création d&#39;un écran <code>WeatherDetailsListScreen</code></h2>
+<p>Créer un composant (un écran) <code>WeatherDetailsListScreen</code>, pour le moment il sera vide.</p>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun WeatherDetailsListScreen(
+    navHostController: NavHostController,
+    cityName: String
+) {
+    
+}
+</code></pre>
+<h2 is-upgraded>2) Définition du graphe de navigation</h2>
+<p>Créer un composant <code>SetupNavGraph</code>. Ce composant va décrire les différents &#34;écrans&#34; de notre application, et la façon dont on navigue.</p>
+<pre><code language="language-kotlin" class="language-kotlin">@ExperimentalAnimationApi
+@ExperimentalComposeUiApi
+@Composable
+fun SetupNavGraph(navHostController: NavHostController) {
+    NavHost(
+        navController = navHostController,
+        startDestination = Screen.WeatherSearch.route
+    ) {
+        composable(
+            route = Screen.WeatherSearch.route
+        ) {
+            WeatherSearchScreen(
+                navHostController = navHostController
+            )
+        }
+        composable(
+            route = &#34;${Screen.WeatherList.route}/{cityName}&#34;,
+            arguments = listOf(navArgument(&#34;cityName&#34;) { type = NavType.StringType })
+        ) {
+            WeatherDetailsListScreen(
+                navHostController = navHostController,
+                cityName = it.arguments?.getString(&#34;cityName&#34;) ?: &#34;&#34;
+            )
+        }
+    }
+}
+
+sealed class Screen(val route: String) {
+    object WeatherSearch : Screen(&#34;WeatherSearch&#34;)
+    object WeatherList : Screen(&#34;WeatherList&#34;)
+}
+</code></pre>
+<p>Ce composant décrit donc un système de navigation avec :</p>
+<ul>
+<li>une route pour la recherche,</li>
+<li>une route pour le détails des résultats.</li>
+</ul>
+<p>Notez que le 2ème écran prend en entrée un nom de ville <code>{cityName}</code>. Notez également que l&#39;on spécifie la route par défaut.</p>
+<p>Nous sommes prêt pour la navigation, référencez ce composant dans la <code>MainActivity</code>.</p>
+<pre><code language="language-kotlin" class="language-kotlin">AndroidweatherTheme {
+    val navHostController = rememberNavController()
+    SetupNavGraph(navHostController = navHostController)
+}
+</code></pre>
+<h2 is-upgraded>3) Navigation entre les 2 écrans</h2>
+<p>Référencer cette resource String :</p>
+<pre><code language="language-xml" class="language-xml">&lt;!-- Liste --&gt;
+&lt;string name=&#34;icn_go_to_details&#34;&gt;Détails&lt;/string&gt;
+</code></pre>
+<p>Dans le composant <code>WeatherSearchScreen</code>, brancher la navigation sur le bouton précedemment créé.</p>
+<pre><code language="language-kotlin" class="language-kotlin">Button(onClick = {
+    navHostController.navigate(route = &#34;${Screen.WeatherList.route}/${city.name}&#34;)
+}) {
+    Icon(
+        imageVector = Icons.Filled.ArrowForward,
+        contentDescription = stringResource(id = R.string.icn_go_to_details)
+    )
+}
+</code></pre>
+<p>Désormais lorsque vous avez lancé une recherche, qu&#39;un résultat est disponible, et que vous appuyez sur le bouton d&#39;affichage de la liste, vous accéder au composant (écran) <code>WeatherDetailsListScreen</code>.</p>
+<p>Cette écran est vide pour le moment, nous allons le remplir.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Liste des résultats" duration="45">
+        <p>Nous avons construit une &#34;url dynamique&#34; qui pointe vers le détail de la liste, avec en entrée de la route, le nom de la ville. Vous pouvez désormais naviguer vers la liste détaillée, qui est pour le moment vide.</p>
+<p>Référencer ces resources String :</p>
+<pre><code language="language-xml" class="language-xml">&lt;!-- Liste --&gt;
+&lt;string name=&#34;icn_search_back_content_description&#34;&gt;Retour&lt;/string&gt;
+&lt;string name=&#34;icn_go_to_fav&#34;&gt;Favoris&lt;/string&gt;
+&lt;string name=&#34;list_title_label&#34;&gt;Météo heure par heure pour %s&lt;/string&gt;
+</code></pre>
+<h2 is-upgraded>1) Composant <code>WeatherList</code></h2>
+<p>Créer un composant <code>WeatherList</code>. Ce composant va référencer une <a href="https://developer.android.com/jetpack/compose/lists" target="_blank">LazyColumn</a>, et afficher les items en entrée.</p>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun WeatherList(weatherItems: List&lt;WeatherItemDomain&gt;)
+</code></pre>
+<p>La <a href="https://developer.android.com/jetpack/compose/lists?hl=fr#lazylistscope" target="_blank">LazyColumn</a> va créer pour chaque item, un composant <code>WeatherListRendererItem</code></p>
+<p>Exemple disponible dans la documentation :</p>
+<pre><code>import androidx.compose.foundation.lazy.items
+
+@Composable
+fun MessageList(messages: List&lt;Message&gt;) {
+    LazyColumn {
+        items(messages) { message -&gt;
+            MessageRow(message)
+        }
+    }
+}
+</code></pre>
+<p>Compléter ce composant.</p>
+<h2 is-upgraded>2) Composant <code>WeatherListRendererItem</code></h2>
+<p>Créer un composant <code>WeatherListRendererItem</code>, qui va représenter un item de la liste.</p>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun WeatherListRendererItem(weatherItem: WeatherItemDomain)
+</code></pre>
+<p>Compléter ce composant pour y afficher la date, l&#39;heure, l&#39;icone fonction de l&#39;humidité, la température et l&#39;humidité.</p>
+<p class="image-container"><img alt="img_30.png" src="img/19b3c6727f949364.png"></p>
+<p>Utiliser cette resource String pour l&#39;affichage.</p>
+<pre><code>&lt;string name=&#34;details_hour_day_label&#34;&gt;Le %s à %sH&lt;/string&gt;
+</code></pre>
+<h2 is-upgraded>3) Affichage dans l&#39;écran <code>WeatherDetailsListScreen</code></h2>
+<p>Créer la vue <code>WeatherDetailsListScreen</code>, c&#39;est cette vue qui va inclure la liste <code>WeatherList</code> et s&#39;occuper du chargement.</p>
+<p>Créer un viewmodel pour cette vue, qui étendra le viewmodel existant. Référencer ce nouveau modèle dans le module Koin.</p>
+<pre><code>class WeatherDetailsViewModel(repository: WeatherRepositoryInterface):WeatherViewModel(repository)
+</code></pre>
+<p>NB : par principe, 1 vue = 1 viewmodel.</p>
+<p>Même si le view model ne fera rien de plus.</p>
+<p>Cet écran, à sa création :</p>
+<ul>
+<li>Va récupérer le viewmodel <code>WeatherDetailsViewModel</code> par injection,</li>
+<li>Lancer automatiquement un chargement avec la ville <code>cityName</code> en entrée via [LaunchedEffect](https://developer.android.com/jetpack/compose/side-effects?hl=fr</li>
+<li>Afficher un loader durant le chargement,</li>
+<li>Afficher la ville de résulat, ainsi qu&#39;un bouton de &#34;retour&#34; dans une <code>TopAppBar</code>,</li>
+<li>Afficher la <code>WeatherList</code> une fois le chargement terminé, et récupérer la liste de données pour l&#39;afficher.</li>
+</ul>
+<p>Voici le code pour la TopBar, qui permet d&#39;afficher le nom de la ville pour le détails, ainsi qu&#39;un bouton de retour.</p>
+<pre><code language="language-kotlin" class="language-kotlin">Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(stringResource(id = R.string.list_title_label, cityName ?: &#34;&#34;))
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navHostController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            modifier = Modifier,
+                            contentDescription = stringResource(id = R.string.icn_search_back_content_description)
+                        )
+                    }
+                }
+            )
+        }
+    ) {
+    // TODO viewmodel pour lancer chargement sur la ville en entrée + loader ou liste en fonction du State
+}
+</code></pre>
+<p>Voilà le résultat final attendu pour la liste.</p>
+<p class="image-container"><img alt="img_11.png" src="img/ba737a6825b6a1ea.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Localisation" duration="120">
+        <p>La localisation va nous permettre de rechercher la météo à partir des coordonnées GPS du téléphone.</p>
+<p>Vous trouverez de nombreuses informations dans la <a href="https://developer.android.com/training/location" target="_blank">documentation officielle</a> de Google.</p>
+<h2 is-upgraded>1) Ajout de dépendance Gradle</h2>
+<pre><code language="language-kotlin" class="language-kotlin">  // Location
+  implementation(&#34;com.google.android.gms:play-services-location:20.0.0&#34;)
+</code></pre>
+<h2 is-upgraded>2) Autorisation d&#39;accès aux coordonnées du téléphone</h2>
+<p>Dans le manifest, ajouter ces autorisations :</p>
+<pre><code language="language-xml" class="language-xml">&lt;manifest ... &gt;
+  &lt;!-- Always include this permission --&gt;
+  &lt;uses-permission android:name=&#34;android.permission.ACCESS_COARSE_LOCATION&#34; /&gt;
+
+  &lt;!-- Include only if your app benefits from precise location access. --&gt;
+  &lt;uses-permission android:name=&#34;android.permission.ACCESS_FINE_LOCATION&#34; /&gt;
+&lt;/manifest&gt;
+</code></pre>
+<h2 is-upgraded>3) Définition des authorisations</h2>
+<p>Tout d&#39;abord, lire <a href="https://developer.android.com/training/location/permissions" target="_blank">cette documentation</a>, pour comprendre le principe de demande d&#39;autorisation sur Android.</p>
+<ol type="1">
+<li>Créer une classe PermissionUtil générique, dont le rôle va être de contrôler si les autorisations ont été données par l&#39;utilisateur, et le cas échéant, les lui demander.</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">class PermissionUtil {
+    companion object {
+        fun checkIfPermissionGranted(context: Context, permissions: Array&lt;String&gt;): Boolean {
+            var granted = true
+            permissions.forEach {
+                granted = granted &amp;&amp; (ContextCompat.checkSelfPermission(context, it)
+                        == PackageManager.PERMISSION_GRANTED)
+            }
+
+            return granted
+        }
+
+        fun shouldShowPermissionRationale(context: Context, permissions: Array&lt;String&gt;): Boolean {
+            (context as Activity).let { activity -&gt;
+                return permissions.any { permission -&gt;
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        activity,
+                        permission
+                    )
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<ol type="1" start="2">
+<li>Créer un composant <code>PermissionPopupSystem</code>, dont le rôle va être de proposer une popup system à l&#39;utilisateur, pour lui demander d&#39;accéder à une ressource.</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun PermissionPopupSystem(
+    context: Context,
+    permissions: Array&lt;String&gt;,
+    permissionRationale: String,
+    permissionAction: (PermissionAction) -&gt; Unit
+) { 
+    val scaffoldState = remember { SnackbarHostState() }
+    val permissionGranted =
+        PermissionUtil.checkIfPermissionGranted(
+            context,
+            permissions
+        )
+
+    if (permissionGranted) {
+        permissionAction(PermissionAction.OnPermissionGranted)
+        return
+    }
+
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissionsResult -&gt;
+        val isGranted = permissions.any {
+            permissionsResult.containsKey(it) &amp;&amp; permissionsResult.getOrDefault(it, false)
+        }
+
+        if (isGranted) {
+            // Permission Accepted
+            permissionAction(PermissionAction.OnPermissionGranted)
+        } else {
+            // Permission Denied
+            permissionAction(PermissionAction.OnPermissionDenied)
+        }
+    }
+
+    val showPermissionRationale = PermissionUtil.shouldShowPermissionRationale(
+        context,
+        permissions
+    )
+
+    if (showPermissionRationale) {
+        LaunchedEffect(showPermissionRationale) {
+          val snackbarResult = scaffoldState.showSnackbar(
+                message = permissionRationale,
+                actionLabel = &#34;Grant Access&#34;,
+                duration = SnackbarDuration.Long
+
+            )
+            when (snackbarResult) {
+                SnackbarResult.Dismissed -&gt; {
+                    //User denied the permission, do nothing
+                    permissionAction(PermissionAction.OnPermissionDenied)
+                }
+                SnackbarResult.ActionPerformed -&gt; {
+                    launcher.launch(permissions)
+                }
+            }
+        }
+    } else {
+        // https://developer.android.com/jetpack/compose/side-effects
+        SideEffect {
+            launcher.launch(permissions)
+        }
+    }
+}
+</code></pre>
+<ol type="1" start="3">
+<li>Créer une classe <code>PermissionAction</code> dont le rôle est d&#39;indiqué quel choix a été réalisé par le client</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">sealed class PermissionAction {
+    object OnPermissionGranted : PermissionAction()
+    object OnPermissionDenied : PermissionAction()
+}
+</code></pre>
+<h2 is-upgraded>4) Récupération des coordonées GPS du téléphone.</h2>
+<p>Désormais, maintenant que les autorisations sont en place, nous pouvons requêter le téléphone pour obtenir les coordonnées.</p>
+<p>Lire <a href="https://developer.android.com/training/location/retrieve-current" target="_blank">cette documentation</a> en premier lieu pour comprendre comment peuvent être récupérées les coordonnées GPS.</p>
+<p>Lire également <a href="https://barbeau.medium.com/kotlin-callbackflow-a-lightweight-architecture-for-location-aware-android-apps-f97b5e66aaa2" target="_blank">cette documentation</a>, qui décrit l&#39;implementation basée sur Kotlin <code>callbackFlow</code> (chapitre &#34;The solution — callbackFlow&#34;)</p>
+<ol type="1">
+<li>Créer une classe <code>LocationViewModel</code> dont le rôle va être de requêter au système les données de localisation</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">data class LocationrViewModelState(
+    var location: Location? = null,
+    var isLocationSearching: Boolean = false,
+)
+
+class LocationViewModel(private val client: FusedLocationProviderClient? = null) : ViewModel() {
+
+    companion object {
+        private const val UPDATE_INTERVAL_SECS = 10L
+        private const val FASTEST_UPDATE_INTERVAL_SECS = 2L
+    }
+
+    var askLocationPermission = MutableStateFlow(false)
+        private set
+
+    fun launchLocationPermission(request: Boolean) {
+        askLocationPermission.value = request
+    }
+
+    fun locate() = callbackFlow&lt;LocationrViewModelState&gt; {
+        val locationRequest = LocationRequest.create().apply {
+            interval = TimeUnit.SECONDS.toMillis(UPDATE_INTERVAL_SECS)
+            fastestInterval = TimeUnit.SECONDS.toMillis(FASTEST_UPDATE_INTERVAL_SECS)
+            priority = Priority.PRIORITY_HIGH_ACCURACY
+        }
+
+        val callBack = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                super.onLocationResult(locationResult)
+                val location = locationResult.lastLocation
+
+                Toast.makeText(
+                    client?.applicationContext,
+                    &#34;Get location $location.&#34;,
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                trySend(LocationrViewModelState(location, false))
+            }
+        }
+
+        trySend(LocationrViewModelState(null, true))
+        client?.requestLocationUpdates(locationRequest, callBack, Looper.getMainLooper())
+
+        awaitClose { client?.removeLocationUpdates(callBack) }
+    }
+}
+</code></pre>
+<p>Déclarez ce view model dans Koin :</p>
+<pre><code language="language-kotlin" class="language-kotlin">single&lt;FusedLocationProviderClient&gt; { LocationServices.getFusedLocationProviderClient(requireApplication.applicationContext) }
+viewModel { LocationViewModel(client =  get()) }
+</code></pre>
+<p>Déclarez également dans le fichier du module Koin, cette fonction inline, qui permet de récupérer une instance de l&#39;application</p>
+<pre><code language="language-kotlin" class="language-kotlin">private inline val requireApplication
+    get() = WeatherApplication.instance ?: error(&#34;Missing call: initWith(application)&#34;)
+</code></pre>
+<p>Et dans l&#39;application principale :</p>
+<pre><code language="language-kotlin" class="language-kotlin">class WeatherApplication : Application() {
+
+    companion object {
+        var instance: WeatherApplication? = null
+    }
+
+    override fun onCreate() {
+        instance = this
+        super.onCreate()
+        startKoin {
+            androidContext(this@WeatherApplication)
+            modules(appModule)
+            modules(commonModule)
+        }
+    }
+}
+</code></pre>
+<p>L&#39;instance est set avant l&#39;initialisation de Koin.</p>
+<ol type="1" start="2">
+<li>Créer un composant <code>LocationPermissionIcon</code> dont le rôle est de :</li>
+</ol>
+<ul>
+<li>présenter un icon de localisation,</li>
+<li>lancer les demandes d&#39;autorisation,</li>
+<li>lancer la recherche de localisation.</li>
+<li>envoyer les coordonées récupérées au composant parent via une callback</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun LocationPermissionIcon(
+    locationSearching: (search: Boolean) -&gt; Unit,
+    locationChange: (location: Location) -&gt; Unit
+) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val locationViewModel = getViewModel&lt;LocationViewModel&gt;()
+
+    val askLocationPermission by locationViewModel.askLocationPermission.collectAsState()
+
+    if (askLocationPermission) {
+        PermissionPopupSystem(
+            context,
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ),
+            stringResource(id = R.string.permission_location_rationale),
+        ) { permissionAction -&gt;
+            when (permissionAction) {
+                is PermissionAction.OnPermissionGranted -&gt; {
+                    locationViewModel.launchLocationPermission(false)
+                    scope.launch {
+                        locationViewModel.locate().collect {
+                            locationSearching(it.isLocationSearching)
+                            if (it.location != null) {
+                                locationChange(it.location!!)
+                                this.cancel()
+                            }
+                        }
+                    }
+                }
+                is PermissionAction.OnPermissionDenied -&gt; {
+                    locationViewModel.launchLocationPermission(false)
+                }
+            }
+        }
+    }
+
+    IconButton(onClick = { locationViewModel.launchLocationPermission(true) }) {
+        Icon(
+            imageVector = Icons.Filled.LocationOn,
+            contentDescription = stringResource(id = R.string.icn_permission_icon_description)
+        )
+    }
+} 
+</code></pre>
+<p>Ajoutez ces ressources</p>
+<pre><code language="language-xml" class="language-xml">&lt;!-- Localisation --&gt;
+&lt;string name=&#34;icn_permission_icon_description&#34;&gt;Me localiser&lt;/string&gt;
+&lt;string name=&#34;permission_location_rationale&#34;&gt;Pour te donner une météo précise, j\&#39;ai besoin de connaître ta position.&lt;/string&gt;
+</code></pre>
+<h2 is-upgraded>5) Récupération des coordonnées, et lancement de la recherche</h2>
+<ol type="1">
+<li>Référencer ce nouveau composant dans <code>WeatherSearchBar</code>, à côté du bouton &#34;clear&#34;.</li>
+</ol>
+<p class="image-container"><img alt="img_16.png" src="img/4b9330be995f54b1.png"></p>
+<ol type="1" start="2">
+<li>Modifier la signature de <code>WeatherSearchBar</code> et faire remonter les coordonnées par ces nouvelles callback</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">fun WeatherSearchBar(
+    searchText: String,
+    placeholderText: String = &#34;&#34;,
+    onSearchTextChanged: (String) -&gt; Unit = {},
+    onClearClick: () -&gt; Unit = {},
+    onLocateSearching: (value: Boolean) -&gt; Unit = {},
+    onLocateChange: (location: Location) -&gt; Unit = {}
+) 
+</code></pre>
+<ul>
+<li>onLocateSearching : localisation en cours de chargement</li>
+<li>onLocateChange : récupération d&#39;une nouvelle localisation onLocateChange</li>
+</ul>
+<p>Déclarez désormais le composant <code>LocationPermissionIcon</code> dans <code>WeatherSearchBar</code> dans la propriété trailingIcon, à la suite du composant ‘clear&#39;.</p>
+<pre><code language="language-kotlin" class="language-kotlin">LocationPermissionIcon(
+    locationChange = onLocateChange,
+    locationSearching = onLocateSearching
+)
+</code></pre>
+<ol type="1" start="3">
+<li>Dans <code>WeatherSearchScreen</code>, exploiter ces 2 callback.</li>
+</ol>
+<ul>
+<li>onLocateSearching : Affichage d&#39;un loader indiquant qu&#39;une localisation est en cours</li>
+<li>onLocateChange : lance une recherche sur le view model <code>WeatherViewModel</code> en explotant la méthode de recherche par coordonnées.</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">onLocateSearching = {
+  locationSearching = it
+},
+onLocateChange = {
+  weatherViewModel.locationChanged(it)
+}
+</code></pre>
+<p>Déclarez également le flag <code>locationSearching</code> :</p>
+<pre><code language="language-kotlin" class="language-kotlin">var locationSearching by remember { mutableStateOf(false) }
+</code></pre>
+<p>Et définissez un état lorsque ce flag change pour indiquer le chargement.</p>
+<pre><code language="language-kotlin" class="language-kotlin">if (state.isLoading || locationSearching) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(30.dp)
+    ) {
+        CircularProgressIndicator()
+        Text(
+            text = stringResource(
+                id =  if (state.isLoading) {
+                    R.string.search_processing_label
+                } else {
+                    R.string.localisation_processing_label
+                }
+            )
+        )
+    }
+} 
+</code></pre>
+<p>Déclarez cette ressource :</p>
+<pre><code language="language-xml" class="language-xml">&lt;string name=&#34;localisation_processing_label&#34;&gt;Localisation en cours...&lt;/string&gt;
+</code></pre>
+<p>Le résultat est tout simplement un state <code>WeatherViewModelState</code>, exactement comme une recherche textuelle, il n&#39;y a donc rien de plus à prévoir pour afficher le résultat d&#39;une recherche par coordonnées.</p>
+<p class="image-container"><img alt="img_17.png" src="img/761d640197f34550.png"></p>
+<p class="image-container"><img alt="img_18.png" src="img/26b812c3d73a044c.png"></p>
+<p>Vous récupérer désormais les coordonnées du téléphones et rechercher la météo grâce à ces coordonnées.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Afficher une Carte Google Map" duration="60">
+        <p>Dans ce chapitre, nous allons intégrer une carte Google Map à l&#39;application pour afficher la ville trouvée sur une carte.</p>
+<p>Pour cela, Android met à disposition <a href="https://developers.google.com/maps/documentation/android-sdk" target="_blank">Maps SDK pour Android</a></p>
+<h2 is-upgraded>1) Configuration et dépendances Gradle.</h2>
+<p>Ajouter ces dépendances Gradle du module.</p>
+<pre><code language="language-kotlin" class="language-kotlin">// Map
+implementation(&#34;com.google.maps.android:maps-compose:2.2.1&#34;)
+implementation(&#34;com.google.android.gms:play-services-maps:18.0.2&#34;)
+</code></pre>
+<p>Pour la récupération de la clé API, ajouter ce plugin au Gradle du projet principal.</p>
+<pre><code language="language-kotlin" class="language-kotlin">plugins {
+  // ...
+
+  id(&#34;com.google.android.libraries.mapsplatform.secrets-gradle-plugin&#34;) version &#34;2.0.1&#34; apply false
+}
+</code></pre>
+<p>Ajouter l&#39;utilisation de ce module au Gradle du module.</p>
+<pre><code language="language-kotlin" class="language-kotlin">plugins {
+    // ...
+    id(&#34;com.google.android.libraries.mapsplatform.secrets-gradle-plugin&#34;)
+}
+</code></pre>
+<p>Référencer la clé d&#39;API dans le fichier local.properties</p>
+<pre><code language="language-properties" class="language-properties">MAPS_API_KEY=xxxxxxxxxxxxx
+</code></pre>
+<p>Synchroniser Gradle.</p>
+<p>Puis rajoutez une référence à cette clé dans le Manifest (dans le noeud XML application).</p>
+<pre><code language="language-xml" class="language-xml">&lt;meta-data
+  android:name=&#34;com.google.android.geo.API_KEY&#34;
+  android:value=&#34;${MAPS_API_KEY}&#34; /&gt;
+</code></pre>
+<h2 is-upgraded>2) Création d&#39;un view model <code>CityViewModel</code></h2>
+<p>Ce View model va exposer des informations utiles à la Map pour afficher la ville et les informations.</p>
+<pre><code language="language-kotlin" class="language-kotlin">class CityViewModel(private val city: WeatherCityDomain): ViewModel()  {
+  val initialZoom = 12f
+
+  val label: String = city.name
+
+  val population : Int
+    get() = city.population
+
+  val lat: Double = city.coord.lat ?: 0.0
+
+  val lon: Double = city.coord.lon ?: 0.0
+
+  val hasCoordinate: Boolean
+    get() = city.coord.lat != null &amp;&amp; city.coord.lon != null
+
+  val formattedCoordinate: String
+    get() {
+      return if (hasCoordinate) {
+        &#34;${
+          LocationFormater.latitudeAsDMS(city.coord.lat!!, 2)
+        }  ${
+          LocationFormater.longitudeAsDMS(
+            city.coord.lon!!, 2
+          )
+        }&#34;
+      } else &#34;&#34;
+    }
+}
+</code></pre>
+<p>Créer cette objet utilitaire <code>LocationFormater</code> qui permet de formater des coordonnées.</p>
+<pre><code language="language-kotlin" class="language-kotlin">object LocationFormater {
+
+    fun latitudeAsDMS(latitude: Double, decimalPlace: Int): String {
+        val direction = if (latitude &gt; 0) &#34;N&#34; else &#34;S&#34;
+        var strLatitude = Location.convert(latitude.absoluteValue, Location.FORMAT_SECONDS)
+        strLatitude = replaceDelimiters(strLatitude, decimalPlace)
+        strLatitude += &#34; $direction&#34;
+        return strLatitude
+    }
+
+    fun longitudeAsDMS(longitude: Double, decimalPlace: Int): String {
+        val direction = if (longitude &gt; 0) &#34;W&#34; else &#34;E&#34;
+        var strLongitude = Location.convert(longitude.absoluteValue, Location.FORMAT_SECONDS)
+        strLongitude = replaceDelimiters(strLongitude, decimalPlace)
+        strLongitude += &#34; $direction&#34;
+        return strLongitude
+    }
+
+    private fun replaceDelimiters(str: String, decimalPlace: Int): String {
+        var str = str
+        str = str.replaceFirst(&#34;:&#34;.toRegex(), &#34;°&#34;)
+        str = str.replaceFirst(&#34;:&#34;.toRegex(), &#34;&#39;&#34;)
+        val pointIndex = str.indexOf(&#34;.&#34;)
+        val endIndex = pointIndex + 1 + decimalPlace
+        if (endIndex &lt; str.length) {
+            str = str.substring(0, endIndex)
+        }
+        str += &#34;\&#34;&#34;
+        return str
+    }
+}
+</code></pre>
+<h2 is-upgraded>3) Creation du composant <code>WeatherMap</code></h2>
+<p>Créer un composant <code>WeatherMap</code></p>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun WeatherMap(modifier: Modifier, viewModel: CityViewModel) 
+</code></pre>
+<p>En vous aidant de cette <a href="https://developers.google.com/maps/documentation/android-sdk/maps-compose" target="_blank">documentation</a>, afficher un Marker permettant d&#39;afficher les coordonnées et informations d&#39;une ville à partir du View model en entrée. Vous pouvez largement vous inspirer de <a href="https://developers.google.com/maps/documentation/android-sdk/maps-compose?hl=fr#add_a_map_to_your_app" target="_blank">l&#39;exemple</a></p>
+<p>Le marker est intéractif, et affiche une information au tap.</p>
+<p>Ressource String à ajouter :</p>
+<pre><code> &lt;!-- map popup --&gt;
+ &lt;string name=&#34;city_description&#34;&gt;%s  ---- %d habitants&lt;/string&gt;
+</code></pre>
+<p>Formattage pour l&#39;affichage de l&#39;information</p>
+<pre><code language="language-kotlin" class="language-kotlin">val description = LocalContext.current.resources.getString(
+        R.string.city_description,
+        viewModel.formattedCoordinate,
+        viewModel.population
+    )
+</code></pre>
+<p class="image-container"><img alt="img_31.png" src="img/6f127566096d48f8.png"></p>
+<h2 is-upgraded>4) Intégration du composant WeatherMap</h2>
+<p>Dans l&#39;écran <code>WeatherSearchScreen</code>, intégrer ce composant lorsque les résultats pour une ville sont disponibles.</p>
+<pre><code language="language-kotlin" class="language-kotlin">WeatherMap(
+  modifier = Modifier
+    .fillMaxWidth()
+    .height(200.dp)
+    .padding(10.dp)
+    .weight(1f),
+  viewModel = CityViewModel(city = city)
+)
+</code></pre>
+<p>Notez que le View Model est instancié à la volée, sans nécessité d&#39;injection.</p>
+<p>Vous obtenez le résultat suivant :</p>
+<p class="image-container"><img alt="img_19.png" src="img/fada01255fdc0f3b.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Splash Screen avec Lottie" duration="45">
+        <p>Rien de tel qu&#39;un premier écran animé, pour donner envie à l&#39;utilisateur de poursuivre l&#39;expérience dans l&#39;application. Nous allons ajouter un premier écran à l&#39;application, qui permettrait en fonction du contexte fonctionnel et technique, de charger des données, de préparer une interface, etc.</p>
+<p>Pour cela nous allons utiliser un SDK magique : <a href="http://airbnb.io/lottie/#/" target="_blank">Lottie</a>.</p>
+<p>Quelques informations sur l&#39;histoire et le fonctionnement de <a href="https://fr.wikipedia.org/wiki/Lottie_(animation)" target="_blank">Lottie</a> .</p>
+<h2 is-upgraded>1) Ajout de la dépendance Gradle</h2>
+<pre><code language="language-kotlin" class="language-kotlin">// Lottie
+implementation(&#34;com.airbnb.android:lottie-compose:5.2.0&#34;)
+</code></pre>
+<h2 is-upgraded>2) Création de l&#39;animation</h2>
+<p>Créer un logo au format SVG, ou utiliser un icone disponible sur <a href="https://www.iconfinder.com/search?q=weather&price=free" target="_blank">IconFinder</a>. Rendez vous sur <a href="https://lottiefiles.com/svg-to-lottie" target="_blank">LottieFiles</a>, et transformer votre SVG au format Lottie, en choissisant des animations proposées. Exportez le tout au formation JSON.</p>
+<p class="image-container"><img alt="img_20.png" src="img/bbcf73fc6f0a7e12.png"></p>
+<p>Importez désormais cette animation dans Android Studio, créer un dossier &#34;Android Ressource Directory&#34; dans le dossier &#34;res&#34;, et nommez le &#34;raw&#34;. Copiez votre fichier JSON dedans.</p>
+<h2 is-upgraded>3) Création du SplashScreen</h2>
+<p>Créer un composant (écran) <code>SplashScreen</code></p>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun SplashScreen(navHostController: NavHostController) {
+    val raw = R.raw.papa_meteo
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(raw))
+    val progress by
+        animateLottieCompositionAsState(composition = composition)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .fillMaxHeight(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LottieAnimation(
+            composition = composition,
+            progress = { progress }
+        )
+    }
+
+    /// TODO attendre la fin de l&#39;animiation, et naviguer vers la page de recherche
+}
+</code></pre>
+<p>Compléter le composant pour naviguer vers l&#39;écran de recherche une fois l&#39;animation terminée : utiliser les informations contenues dans le state pour connaitre l&#39;état de l&#39;animation, et utilisez le navHostController pour naviguer.</p>
+<p>Regarder ici pour trouver un <a href="https://semicolonspace.com/jetpack-compose-lottie-animations/" target="_blank">exemple ‘Start the Animation on a Button Click&#39; </a> où l&#39;algo écoute le fin de lecture de l&#39;animation.</p>
+<h2 is-upgraded>4) Référencement du SplashScreen</h2>
+<p>Dans le composant <code>SetupNavGraph</code>, référencer le SplashScreen en tant que premier écran.</p>
+<p>Vous pouvez lancer l&#39;application et visualiser l&#39;animation au démarrage de l&#39;application.</p>
+<p class="image-container"><img alt="img_21.png" src="img/76cadf979fa227e0.png"></p>
+<h2 is-upgraded>5) Bonus : gestion du DarkTheme</h2>
+<p>Faites en sorte d&#39;avoir une animation dédiée au light theme, une au dark theme (changement de couleur des bordures par exemple).</p>
+<p class="image-container"><img alt="img_22.png" src="img/8b86f7a30a12b99c.png"></p>
+<p>Pour cela :</p>
+<ul>
+<li>exporter cette une nouvelle animation au format JSON, et importez là sous un autre nom dans l&#39;application.</li>
+<li>tester si le système est en light ou dark mode dans <code>SplashScreen</code>, et charger la bonne animation en fonction.</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">androidx.compose.foundation.isSystemInDarkTheme
+</code></pre>
+<p>Passer en light mode ou en dark mode, et testez votre animation.</p>
+<pre><code language="language-shell" class="language-shell">adb shell &#34;cmd uimode night yes&#34;
+adb shell &#34;cmd uimode night no&#34;
+</code></pre>
+<p class="image-container"><img alt="img_23.png" src="img/5365d74135f308f0.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Data Store : mes favoris" duration="120">
+        <p>Cette fonctionnalité va permettre de sauvegarder dans une liste une ville, pour rapidement lancer une recherche dessus. Nous allons donc ajouter un bouton &#34;favoris&#34; sur le résultat, et ajouter / supprimer la ville dans la liste sauvegardée. La liste des favoris sera accessible dans la page de recherche. Lorsque l&#39;utilisateur sélectionne une ville, celle-ci est directement chargée.</p>
+<p class="image-container"><img alt="img_24.png" src="img/113c2cb99dd48085.png"></p>
+<h2 is-upgraded>1) Création du Datastore</h2>
+<p>Le datastore permet de sauvegarder localement des informations sur le device. Veuillez d&#39;abord prendre connaissance de la <a href="https://developer.android.com/topic/libraries/architecture/datastore" target="_blank">documentation sur le datastore</a>.</p>
+<ol type="1">
+<li>Ajouter cette dépendance Gradle.</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">implementation(&#34;androidx.datastore:datastore-preferences:1.0.0&#34;)
+</code></pre>
+<ol type="1" start="2">
+<li>Créer la data class <code>FavCity</code> qui va stocker les informations de la ville.</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">data class FavCity(
+    val name : String
+)
+</code></pre>
+<ol type="1" start="3">
+<li>Créer l&#39;interface <code>UserPreferencesRepositoryInterface</code> du datastore :</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">interface UserPreferencesRepositoryInterface {
+    val favsCities : Flow&lt;List&lt;FavCity&gt;&gt;
+
+    suspend fun addOrRemoveFavCity(favCity : FavCity)
+
+    suspend fun isInFavs(favCity : FavCity): Flow&lt;Boolean&gt;
+}
+</code></pre>
+<ol type="1" start="4">
+<li>Créer l&#39;implémentation <code>UserPreferencesRepositoryImpl</code> du data store :</li>
+</ol>
+<pre><code language="language-kotlins" class="language-kotlins">class UserPreferencesRepositoryImpl(
+    private val dataStore: DataStore&lt;Preferences&gt;,
+) : UserPreferencesRepositoryInterface {
+
+    private object Keys {
+        val cities = stringPreferencesKey(&#34;cities&#34;)
+    }
+
+    private inline val Preferences.cities
+        get() = this[Keys.cities] ?: &#34;&#34;
+
+    override val favsCities: Flow&lt;List&lt;FavCity&gt;&gt; = dataStore.data
+        .catch {
+            // throws an IOException when an error is encountered when reading data
+            if (it is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }.map { preferences -&gt;
+            preferences.cities.split(&#34;,&#34;).mapNotNull {
+                if(it.trim().isNotEmpty()) { FavCity(it) } else { null }
+            }
+        }.distinctUntilChanged()
+
+    override suspend fun addOrRemoveFavCity(favCity: FavCity) {
+        dataStore.edit {
+            val index = it[Keys.cities]?.split(&#34;,&#34;)?.indexOf(favCity.name)
+            if (index != null &amp;&amp; index != -1) {
+                it[Keys.cities] =
+                    it[Keys.cities]?.split(&#34;,&#34;)?.filter { cityName -&gt; cityName != favCity.name }
+                        ?.joinToString() ?: &#34;&#34;
+            } else {
+                it[Keys.cities] = (it[Keys.cities] ?: &#34;&#34;) + favCity.name + &#34;,&#34;
+            }
+        }
+    }
+
+    override suspend fun isInFavs(favCity: FavCity): Flow&lt;Boolean&gt; =
+        dataStore.data.map { preferences -&gt;
+            preferences.cities.indexOf(favCity.name) != -1
+        }.distinctUntilChanged()
+}
+</code></pre>
+<p>Prenez connaissance de l&#39;implémentation pour comprendre la logique de sauvegarde, de récupération d&#39;une ville. Notez que les méthodess retournent des <code>flow</code>, ce qui permettra de requêter le datastore comme une API.</p>
+<ol type="1" start="6">
+<li>Ajouter ce code dans le fichier <code>AppKoinModule</code></li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">private val Context.dataStore by preferencesDataStore(name = &#34;user_preferences&#34;)
+</code></pre>
+<ol type="1" start="7">
+<li>Référencer cette implementation dans le module Koin.</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin"> single&lt;UserPreferencesRepositoryInterface&gt; { UserPreferencesRepositoryImpl(requireApplication.dataStore) }
+</code></pre>
+<h2 is-upgraded>2) Création de l&#39;UI</h2>
+<ol type="1">
+<li>Créer un view model <code>FavViewModel</code> qui va permettre de s&#39;interfacer avec les préférencer utilisateurs.</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">data class FavViewModelState(
+    var currentFavCity: FavCity? = null,
+    var isInFav: Boolean = false,
+    var favs: List&lt;FavCity&gt; = emptyList(),
+    var isLoading: Boolean = false,
+)
+
+class FavViewModel(private val userPreferences: UserPreferencesRepositoryInterface) : ViewModel() {
+    fun load() = flow {
+        userPreferences.favsCities.collect {
+            emit(
+                FavViewModelState(
+                    favs = it.filter { fav -&gt; fav.name.isNotEmpty() },
+                    isLoading = false
+                )
+            )
+        }
+    }
+
+    fun addOrRemoveCity(city: WeatherCityDomain) {
+        viewModelScope.launch {
+            userPreferences.addOrRemoveFavCity(FavCity(city.name))
+            isInFav(city)
+        }
+    }
+
+    fun isInFav(city: WeatherCityDomain) = flow {
+        userPreferences.isInFavs(FavCity(city.name)).collect {
+            emit(
+                FavViewModelState(
+                    currentFavCity = FavCity(city.name),
+                    isInFav = it,
+                    isLoading = false
+                )
+            )
+        }
+    }
+}
+</code></pre>
+<p>Ce view model possède les méthodes qui vont permettre à l&#39;UI de s&#39;interfacer avec les préferences, et emettre, comme pour un appel à un repository, un état du view model. Rajoutez ce view model en injection Koin.</p>
+<p>N&#39;oubliez pas de référencer ce ViewModel dans Koin.</p>
+<ol type="1" start="2">
+<li>Créer un composant <code>FavIcon</code>, qui va permettre au click, d&#39;ajouter ou de supprimer une ville.</li>
+</ol>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun FavIcon(
+    city: WeatherCityDomain,
+    modifier: Modifier
+) {
+    val favViewModel = getViewModel&lt;FavViewModel&gt;()
+
+    val state by remember(favViewModel) {
+        favViewModel.isInFav(city)
+    }.collectAsState(initial = FavViewModelState())
+
+    IconButton(onClick = { favViewModel.addOrRemoveCity(city) }, modifier = modifier) {
+        Icon(
+            imageVector = if (state.isInFav) {
+                Icons.Default.Favorite
+            } else Icons.Filled.FavoriteBorder,
+            contentDescription = stringResource(id = R.string.fav_icon_description)
+        )
+    }
+}
+</code></pre>
+<p>Ajouter la descriptiopn de l&#39;icone dans les ressources string.</p>
+<pre><code language="language-xml" class="language-xml">&lt;!-- Favoris --&gt;
+&lt;string name=&#34;fav_title_label&#34;&gt;Mes recherches habituelles&lt;/string&gt;
+&lt;string name=&#34;fav_icon_description&#34;&gt;Ajouter / Supprimer des favoris&lt;/string&gt;
+</code></pre>
+<p>Notez qu&#39;en fonction du state, l&#39;icon diffère. Référencer ce composant <code>FavIcon</code> dans le composant <code>WeatherDetailsItem</code>.</p>
+<p class="image-container"><img alt="img_25.png" src="img/37f45820246e4a9.png"></p>
+<ol type="1" start="3">
+<li>Création de la liste</li>
+</ol>
+<p>Créer un composant <code>FavList</code>.</p>
+<pre><code language="language-kotlin" class="language-kotlin">@Composable
+fun FavsList(modifier: Modifier, selectionChange: (String) -&gt; Unit) {
+    val favViewModel = getViewModel&lt;FavViewModel&gt;()
+
+    val state by remember(favViewModel) {
+        favViewModel.load()
+    }.collectAsState(initial = FavViewModelState())
+
+    Column(modifier = modifier) {
+        if (state.isLoading) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (state.favs.isNotEmpty()) {
+            Row(
+                modifier = modifier.padding(1.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    modifier = Modifier.padding(10.dp),
+                    imageVector = Icons.Filled.List,
+                    contentDescription = stringResource(id = R.string.icn_go_to_details)
+                )
+                Text(
+                    text = stringResource(id = R.string.fav_title_label),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
+                items(items = state.favs, itemContent = { item -&gt;
+                    Text(&#34;- ${item.name}&#34;, modifier = Modifier
+                        .padding(5.dp)
+                        .clickable {
+                            selectionChange(item.name)
+                        })
+                })
+            }
+        }
+    }
+}
+</code></pre>
+<p>Ce composant se charge tout simplement de lancer le chargement des favoris au démarrage, et d&#39;afficher chaque ville dans une liste. Lorsque l&#39;utilisateur selectionne une ville, la callback en entrée est appelée.</p>
+<p>Référencer le composant <code>FavsList</code> dans le composant <code>WeatherSearchScreen</code> pour que cette liste soit disponible à l&#39;affichage du premier écran de recherche.</p>
+<pre><code language="language-kotlin" class="language-kotlin">FavsList(
+  modifier = Modifier
+      .fillMaxWidth()
+      .padding(30.dp),
+  selectionChange = {
+      text = it
+      weatherViewModel.cityChanged(text)
+  }
+)
+</code></pre>
+<p>Lancer l&#39;application, rechercher et ajouter des villes à vos favoris. Relancez l&#39;application, et regarder la liste des favoris à disposition.</p>
+<p class="image-container"><img alt="img_26.png" src="img/f44db75ac4c4090.png"></p>
+<p>Désormais, lorsque l&#39;utilisateur sélectionne une ville, la callback lance un appel classique de recherche, cette fois à partir de la ville selectionnée. Il n&#39;y a rien de plus à faire, l&#39;état en sortie va mettre à jour la recherche.</p>
+<p class="image-container"><img alt="img_27.png" src="img/b48e088c3f3bde89.png"></p>
+<p>Notez l&#39;état du favoris.</p>
+<p>Vous utilisez désormais un data store local pour sauvegarder les préférences d&#39;un utilisateur. Vous pouvez imaginer de nombreux cas d&#39;usage du data store local (sauvegarde d&#39;un identifiant, d&#39;un mail, d&#39;une configuration d&#39;interface, etc.)</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Gestion du offline et/ou du cache" duration="120">
+        <p>Android Room permet de sauvegarder localement des données. Nous allons exploiter Android Room pour mettre en cache les appels à l&#39;API météo.</p>
+<p>Veuillez d&#39;abord prendre connaissance de la présentation à <a href="https://developer.android.com/training/data-storage/room" target="_blank">Android Room</a></p>
+<h2 is-upgraded>Dépendances Gradles</h2>
+<p>Ajouter <code>room</code> dans les dépendances principales :</p>
+<pre><code language="language-kotlin" class="language-kotlin">val roomVersion by extra(&#34;2.4.3&#34;)
+</code></pre>
+<p>Puis référencer dans le module de l&#39;application,</p>
+<ul>
+<li>Le plugin</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">id(&#34;kotlin-kapt&#34;)
+</code></pre>
+<ul>
+<li>la variable d&#39;accès à la version de Room</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">val roomVersion: String by rootProject.extra
+</code></pre>
+<ul>
+<li>Les options de compilation</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">defaultConfig {
+    /// ...
+  javaCompileOptions {
+    annotationProcessorOptions {
+      arguments += mapOf(
+        &#34;room.schemaLocation&#34; to &#34;$projectDir/schemas&#34;,
+        &#34;room.incremental&#34; to &#34;true&#34;)
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>La JVM utilisée (1.8 vers java 17)</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+kotlinOptions {
+  jvmTarget = &#34;17&#34;
+}
+</code></pre>
+<ul>
+<li>Les dépendances suivantes :</li>
+</ul>
+<pre><code language="language-kotlin" class="language-kotlin">// Room
+implementation(&#34;androidx.room:room-runtime:$roomVersion&#34;)
+annotationProcessor(&#34;androidx.room:room-compiler:$roomVersion&#34;)
+implementation(&#34;androidx.room:room-ktx:$roomVersion&#34;)
+// To use Kotlin annotation processing tool (kapt)
+kapt(&#34;androidx.room:room-compiler:$roomVersion&#34;)
+implementation (&#34;com.google.code.gson:gson:2.7&#34;)
+</code></pre>
+<h2 is-upgraded>Déclaration des objets sous forme d&#39;entité</h2>
+<p>Pour rendre l&#39;objet sauvegardable en retour de l&#39;API, éditer <code>WeatherResultVO</code> et ajouter l&#39;annotation <code>@Entity</code> et une primary key <code>@PrimaryKey</code></p>
+<pre><code language="language-kotlin" class="language-kotlin">@Entity(tableName = &#34;WeatherResult&#34;)
+@Serializable
+data class WeatherResultVO(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int? = null,
+    val city: WeatherCityVO? = null,
+    val list: List&lt;WeatherItemVO&gt;? = listOf()
+)
+</code></pre>
+<p>Cependant, <code>WeatherCityVO</code> et <code>WeatherItemVO</code> ne sont pas des variables primitive, il faut donc décrire comment tous les objets de la grape peuvent être convertis pour être sauvegardés dans une base de données locale. Créer donc une classe <code>Converters</code>.</p>
+<pre><code language="language-kotlin" class="language-kotlin">class Converters {
+
+    @TypeConverter
+    fun fromWeatherCity(value: WeatherCityVO): String {
+        val gson = Gson()
+        val type = object : TypeToken&lt;WeatherCityVO&gt;() {}.type
+        return gson.toJson(value, type)
+    }
+
+    @TypeConverter
+    fun toWeatherCity(value: String): WeatherCityVO {
+        val gson = Gson()
+        val type = object : TypeToken&lt;WeatherCityVO&gt;() {}.type
+        return gson.fromJson(value, type)
+    }
+
+    @TypeConverter
+    fun fromWeatherItem(value: List&lt;WeatherItemVO&gt;): String {
+        val gson = Gson()
+        val type = object : TypeToken&lt;List&lt;WeatherItemVO&gt;&gt;() {}.type
+        return gson.toJson(value, type)
+    }
+
+    @TypeConverter
+    fun toWeatherItem(value: String): List&lt;WeatherItemVO&gt; {
+        val gson = Gson()
+        val type = object : TypeToken&lt;List&lt;WeatherItemVO&gt;&gt;() {}.type
+        return gson.fromJson(value, type)
+    }
+
+    @TypeConverter
+    fun fromCoordinate(value: CoordinateVO): String {
+        val gson = Gson()
+        val type = object : TypeToken&lt;CoordinateVO&gt;() {}.type
+        return gson.toJson(value, type)
+    }
+
+    @TypeConverter
+    fun toCoordinate(value: String): CoordinateVO {
+        val gson = Gson()
+        val type = object : TypeToken&lt;CoordinateVO&gt;() {}.type
+        return gson.fromJson(value, type)
+    }
+
+    @TypeConverter
+    fun fromWeatherInfo(value: WeatherInfoVO): String {
+        val gson = Gson()
+        val type = object : TypeToken&lt;WeatherInfoVO&gt;() {}.type
+        return gson.toJson(value, type)
+    }
+
+    @TypeConverter
+    fun toWeatherInfo(value: String): WeatherInfoVO {
+        val gson = Gson()
+        val type = object : TypeToken&lt;WeatherInfoVO&gt;() {}.type
+        return gson.fromJson(value, type)
+    }
+}
+</code></pre>
+<p>Notez que pour chacun des objets, il y a une méthode de sérialisation, et une méthode de désérialisation. Pour cela on utilisera <code>Gson</code>.</p>
+<p>NB : noter que dans une clean architecture, il faudrait en toute logique créer des classe &#34;Entity&#34; dédiées à la sauvegarde en base, et avoir un Mapper qui transforme les objets provenant de l&#39;API en Entity pour la base. En  l&#39;état cela créer un couplage fort entre le format de données du retour API, et ce qui est sauvegardé dans la base de données locale Room. C&#39;est par soucis de simplification dans ce CodeLab.</p>
+<h2 is-upgraded>Création du DAO</h2>
+<p>Le DAO (data access object) va permettre de requêter les données dans la base locale. Créer l&#39;interface <code>WeatherDao</code></p>
+<pre><code language="language-kotlin" class="language-kotlin">@Dao
+interface WeatherDao {
+    @Query(&#34;SELECT * FROM WeatherResult&#34;)
+    fun getAll(): List&lt;WeatherResultVO&gt;
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(weatherResult: WeatherResultVO)
+
+    @Query(&#34;DELETE FROM WeatherResult&#34;)
+    fun deleteAll()
+}
+</code></pre>
+<p>Avec l&#39;annotation <code>@Dao</code>, l&#39;implementation va être auto générée.</p>
+<h2 is-upgraded>Création de la base de données locale</h2>
+<p>Créer la base de données Room <code>WeatherRoomDb</code>.</p>
+<pre><code language="language-kotlin" class="language-kotlin">@Database(entities = [WeatherResultVO::class], version = 2, exportSchema = false)
+@TypeConverters(Converters::class)
+abstract class WeatherRoomDb : RoomDatabase() {
+    abstract fun weatherDao(): WeatherDao
+
+    companion object {
+        // Singleton prevents multiple instances of database opening at the
+        // same time.
+        @Volatile
+        private var INSTANCE: WeatherRoomDb? = null
+
+        fun getDatabase(context: Context): WeatherRoomDb {
+            // if the INSTANCE is not null, then return it,
+            // if it is, then create the database
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    WeatherRoomDb::class.java,
+                    &#34;weather_database&#34;
+                ).fallbackToDestructiveMigration().build()
+                INSTANCE = instance
+                // return instance
+                instance
+            }
+        }
+    }
+}
+</code></pre>
+<p>Notez :</p>
+<ul>
+<li>l&#39;annotation <code>@Database</code> qui référence des entités stockés</li>
+<li>l&#39;annotation <code>@TypeConverters</code> qui référence les converters.</li>
+<li>la création de la DB sous forme d&#39;un singleton</li>
+</ul>
+<h2 is-upgraded>Injection de la base de donnée via Koin</h2>
+<p>Dans le module Koin, déclarer l&#39;instance de base données dans <code>commonModule</code>.</p>
+<pre><code language="language-kotlin" class="language-kotlin">val database by lazy { WeatherRoomDb.getDatabase(requireApplication) }
+</code></pre>
+<p>Modifier la déclaration vers le repository, pour que <code>WeatherRepository</code> prenne également le <code>weatherDao</code> dans le constructeur (pour le moment en erreur, nous n&#39;avons pas encore modifié le constructeur).</p>
+<pre><code language="language-kotlin" class="language-kotlin">single&lt;WeatherRepositoryInterface&gt; { WeatherRepository(get(), database.weatherDao()) }
+</code></pre>
+<h2 is-upgraded>Utilisation du DAO dans le repository</h2>
+<p>Désormais, utilisons le DAO pour enregistrer, récupérer, et supprimers les données du cache.</p>
+<p>Modifier <code>WeatherRepository</code></p>
+<pre><code language="language-kotlin" class="language-kotlin">fun CoroutineScope.launchPeriodicAsync(
+    repeatMillis: Long,
+    action: () -&gt; Unit
+) = this.async {
+    if (repeatMillis &gt; 0) {
+        while (isActive) {
+            action()
+            delay(repeatMillis)
+        }
+    } else {
+        action()
+    }
+}
+
+class WeatherRepository(
+    private val openWeatherApi: OpenWeatherApi,
+    private val weatherDao: WeatherDao
+) : KoinComponent,
+    WeatherRepositoryInterface {
+
+    init {
+        startWeatherClear()
+    }
+
+    private fun startWeatherClear() {
+        CoroutineScope(Dispatchers.IO).launchPeriodicAsync(30000) {
+            weatherDao.deleteAll()
+            Log.d(&#34;WeatherRepository&#34;, &#34;WeatherRepository delete cache&#34;)
+        }
+    }
+
+    override suspend fun fetchWeather(
+        lat: Double,
+        lon: Double
+    ): Flow&lt;Resource&lt;WeatherResultDomain?&gt;&gt; {
+        return fetch(null, lat, lon)
+    }
+
+    override suspend fun fetchWeather(city: String): Flow&lt;Resource&lt;WeatherResultDomain?&gt;&gt; {
+        return fetch(city, null, null)
+    }
+
+    private suspend fun fetch(
+        city: String?,
+        lat: Double?,
+        lon: Double?
+    ): Flow&lt;Resource&lt;WeatherResultDomain?&gt;&gt; = flow {
+        emit(Resource.Loading())
+        if (city != null) {
+            var result = weatherDao.getAll()
+                .firstOrNull { it.city?.name?.lowercase(Locale.FRANCE) == city.lowercase(Locale.FRANCE) }
+            if (result == null) {
+                result = openWeatherApi.fetchWeather(city)
+                if (result.city != null) {
+                    weatherDao.insert(result)
+                    Log.d(&#34;WeatherRepository&#34;, &#34;WeatherRepository insert in cache&#34;)
+                }
+            } else {
+                Log.d(&#34;WeatherRepository&#34;, &#34;WeatherRepository use cache&#34;)
+            }
+
+            emit(Resource.Success(result.toDomain()))
+        } else {
+            emit(Resource.Success(openWeatherApi.fetchWeather(lat!!, lon!!).toDomain()))
+        }
+    }
+}
+</code></pre>
+<p>Lisez les nouvelles implémentation du repository</p>
+<ul>
+<li><code>CoroutineScope.launchPeriodicAsync</code> permet de lancer un traitement périodique</li>
+<li><code>startWeatherClear()</code> est lancé à la création du repository, son but est de clear le cache toutes les 30 secondes.</li>
+<li>dans la méthode <code>fetch</code>, on commence par regarder si quelque chose est disponible en cache, et correspond à la ville à rechercher. Si c&#39;est le cas, on n&#39;appelle pas l&#39;API, si ce n&#39;est pas le cas, on appelle l&#39;API, puis on sauvegarde le résultat via le DAO.</li>
+</ul>
+<h2 is-upgraded>Un dernier changement dans le ViewModel</h2>
+<p>Dans le viewModel <code>WeatherViewModel</code>, exécuter le flow dans une Coroutine de type IO.</p>
+<pre><code language="language-kotlin" class="language-kotlin">viewModelScope.launch(context = Dispatchers.IO) { ...
+</code></pre>
+<p>Pourquoi ? Par défaut, lorsque que vous lancer une Coroutine dans <code>viewModelScope.launch</code>, la Coroutine sera exécutees dans le Main thread, hors Room interdit la requêtage dans la base de données depuis le Thread principal. En spécifiant le thread d&#39;exécution on lance le flow explicitement dans un Thread IO.</p>
+<p>Désormais lancer l&#39;application, lancer plusieurs fois la recherche une ville identique, et regarder le debugger. Vous allez pouvoir constater que le cache est exploité en fonction du temps entre chaque appels.</p>
+<p>Exemple</p>
+<p class="image-container"><img alt="img_28.png" src="img/e2f48e4003b10816.png"></p>
+<p>Pour 5 appels effectués sur une même ville, 2 appels ont été effectué sur l&#39;API, et 3 appels ont exploité le cache. On pourrait ajouter d&#39;autres stratégies : récupérer le cache en cas d&#39;un retour en erreur sur une ville connue, en cas de perte de connexion, etc.</p>
+<p>Désormais vous savez utiliser <code>Room</code> pour sauvegarder des retours API (ou autre).</p>
+<p>Les applications de Room sont nombreuses, la base de données locales peut :</p>
+<ul>
+<li>Eviter de surcharger les appels réseau,</li>
+<li>Afficher de données s&#39;il n&#39;y a pas de réseau,</li>
+<li>Eviter des appels inutiles si les paramètres d&#39;appels sont les mêmes</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
