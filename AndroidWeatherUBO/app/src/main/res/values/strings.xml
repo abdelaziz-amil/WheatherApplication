@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Android Weather UBO</string>
+
+    <!--Recherche -->
+    <string name="search_placeholder">Saisie une ville.</string>
+    <string name="search_processing_label">Recherche en cours...</string>
+    <string name="icn_search_clear_content_description">Annuler</string>
+
+    <!-- Details -->
+    <string name="details_city_label">Résultats pour la ville de %s</string>
+    <string name="details_hour_label">En ce moment à %sH</string>
+    <string name="details_infos_label">%1$.1f ° | %2$.1f pourcent d\'humidité</string>
+
+    <!--Recherche -->
+    <string name="icn_go_to_details">Détails</string>
+    <string name="entry_label">Tu hésites à aller à la plage ? \n Go regarder la météo !</string>
+
+    <!-- Liste -->
+    <string name="icn_search_back_content_description">Retour</string>
+    <string name="icn_go_to_fav">Favoris</string>
+    <string name="list_title_label">Météo heure par heure pour %s</string>
+    <string name="details_hour_day_label">Le %s à %sH</string>
+
+    <!-- Localisation -->
+    <string name="icn_permission_icon_description">Me localiser</string>
+    <string name="permission_location_rationale">Pour te donner une météo précise, j\'ai besoin de connaître ta position.</string>
+    <string name="localisation_processing_label">Localisation en cours...</string>
+</resources>
