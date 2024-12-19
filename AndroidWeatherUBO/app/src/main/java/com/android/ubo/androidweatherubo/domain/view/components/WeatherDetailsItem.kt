@@ -17,6 +17,7 @@ import com.android.ubo.androidweatherubo.domain.model.CoordinateDomain
 import com.android.ubo.androidweatherubo.domain.model.WeatherCityDomain
 import com.android.ubo.androidweatherubo.domain.model.WeatherInfoDomain
 import com.android.ubo.androidweatherubo.domain.model.WeatherItemDomain
+import com.android.ubo.androidweatherubo.domain.view.viewmodel.CityViewModel
 import java.time.LocalDateTime
 
 @Composable
@@ -25,6 +26,15 @@ fun WeatherDetailsItem(
     city: WeatherCityDomain,
     item: WeatherItemDomain
 ) {
+
+    WeatherMap(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(10.dp)
+            .height(100.dp),
+        viewModel = CityViewModel(city = city)
+    )
     Column (
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,

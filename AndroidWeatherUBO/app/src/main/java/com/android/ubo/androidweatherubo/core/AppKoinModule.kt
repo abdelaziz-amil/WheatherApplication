@@ -1,8 +1,11 @@
 package com.android.ubo.androidweatherubo.core
 
+import android.content.Context
 import android.util.Log
+import androidx.datastore.preferences.preferencesDataStore
 import com.android.ubo.androidweatherubo.WeatherApplication
 import com.android.ubo.androidweatherubo.data.api.OpenWeatherApi
+import com.android.ubo.androidweatherubo.data.repository.UserPreferencesRepositoryInterface
 import com.android.ubo.androidweatherubo.data.repository.WeatherRepository
 import com.android.ubo.androidweatherubo.data.repository.WeatherRepositoryInterface
 import com.android.ubo.androidweatherubo.domain.view.list.WeatherViewModel
@@ -10,6 +13,7 @@ import com.android.ubo.androidweatherubo.domain.view.search.WeatherSearchScreen
 import com.android.ubo.androidweatherubo.domain.view.search.WeatherSearchScreenViewModel
 import com.android.ubo.androidweatherubo.domain.view.weatherDetailListViewModel.LocationViewModel
 import com.android.ubo.androidweatherubo.domain.view.weatherDetailListViewModel.WeatherDetailListViewModel
+import com.example.weather.data.local.favori.UserPreferencesRepositoryImpl
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import io.ktor.client.HttpClient
@@ -30,9 +34,11 @@ import org.koin.dsl.module
 
 private inline val requireApplication
     get() = WeatherApplication.instance ?: error("Missing call: initWith(application)")
+private val Context.dataStore by preferencesDataStore(name = "user_preferences")
 val appModule = module {
     single<String>(named("weather_api_key")) { "888f70e84a4d7e44f3c0d4870c926e9d" }
     single<FusedLocationProviderClient> { LocationServices.getFusedLocationProviderClient(requireApplication.applicationContext) }
+    single<UserPreferencesRepositoryInterface> { UserPreferencesRepositoryImpl(requireApplication.dataStore) }
     viewModel { LocationViewModel(client = get(), context = get()) }
     viewModel { WeatherViewModel(repository = get()) }
     viewModel { WeatherDetailListViewModel(repository = get()) }

@@ -2,6 +2,7 @@ package com.android.ubo.androidweatherubo.domain.navigation
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.internal.composableLambda
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -11,14 +12,20 @@ import androidx.navigation.navArgument
 import com.android.ubo.androidweatherubo.domain.view.search.WeatherSearchScreen
 import com.android.ubo.androidweatherubo.domain.view.components.WeatherDetailsListScreen
 import androidx.compose.ui.Modifier
+import com.example.weather.domain.view.splashScreen.SplashScreen
 
 @Composable
 fun SetupNavGraph(modifier: Modifier,
                   navHostController: NavHostController) {
     NavHost(
         navController = navHostController,
-        startDestination = Screen.WeatherSearch.route
+        startDestination = Screen.SplashScreen.route
     ) {
+        composable(
+            route = Screen.SplashScreen.route
+        ) {
+            SplashScreen(navHostController = navHostController)
+        }
         composable(
             route = Screen.WeatherSearch.route
         ) {
@@ -41,6 +48,7 @@ fun SetupNavGraph(modifier: Modifier,
 }
 
 sealed class Screen(val route: String) {
+    object SplashScreen : Screen("SplashScreen")
     object WeatherSearch : Screen("WeatherSearch")
     object WeatherList : Screen("WeatherList")
 }

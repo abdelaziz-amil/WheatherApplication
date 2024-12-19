@@ -25,4 +25,5 @@
     <string name="icn_permission_icon_description">Me localiser</string>
     <string name="permission_location_rationale">Pour te donner une météo précise, j\'ai besoin de connaître ta position.</string>
     <string name="localisation_processing_label">Localisation en cours...</string>
+    <string name="city_description">%s  ---- %d habitants</string>
 </resources>

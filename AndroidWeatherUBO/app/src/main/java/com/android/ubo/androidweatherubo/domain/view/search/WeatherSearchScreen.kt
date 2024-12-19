@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -34,7 +33,6 @@ import com.android.ubo.androidweatherubo.R
 import com.android.ubo.androidweatherubo.domain.navigation.Screen
 import com.android.ubo.androidweatherubo.domain.view.components.WeatherDetailsItem
 import com.android.ubo.androidweatherubo.domain.view.components.WeatherSearchBar
-import com.android.ubo.androidweatherubo.domain.view.list.WeatherViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
